@@ -1,20 +1,79 @@
-// Seed do componente raiz do Document Management System.
-//
-// Este é apenas um ponto de partida mínimo. Durante o Passo 3 você vai usar o
-// Agent Mode do GitHub Copilot para construir os componentes:
-//   - components/UploadComponent
-//   - components/DocumentList
-//   - components/DownloadButton
-// e o serviço services/ que consome a API do backend via fetch.
+import { useEffect, useState } from 'react';
+import UploadComponent from './components/UploadComponent.jsx';
+import DocumentList from './components/DocumentList.jsx';
+import { listDocuments } from './services/documentService.js';
 
 export default function App() {
+  const [userId, setUserId] = useState('');
+  const [documents, setDocuments] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const trimmedUserId = userId.trim();
+
+  useEffect(() => {
+    if (!trimmedUserId) {
+      setDocuments([]);
+      return undefined;
+    }
+
+    let ignore = false;
+    setIsLoading(true);
+    setErrorMessage('');
+
+    listDocuments(trimmedUserId)
+      .then((loadedDocuments) => {
+        if (!ignore) setDocuments(loadedDocuments);
+      })
+      .catch((error) => {
+        if (!ignore) setErrorMessage(error.message);
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [trimmedUserId, refreshKey]);
+
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
       <h1>Document Management System</h1>
-      <p>
-        Seed do frontend. Construa a interface durante o Passo 3 usando o Agent
-        Mode do GitHub Copilot.
-      </p>
+
+      <label>
+        Identificador do usuário:{' '}
+        <input
+          type="text"
+          value={userId}
+          onChange={(event) => setUserId(event.target.value)}
+          placeholder="Ex.: joao"
+        />
+      </label>
+
+      {trimmedUserId ? (
+        <>
+          <section>
+            <h2>Enviar documento</h2>
+            <UploadComponent
+              userId={trimmedUserId}
+              onUploadSuccess={() => setRefreshKey((key) => key + 1)}
+            />
+          </section>
+
+          <section>
+            <h2>Documentos</h2>
+            {isLoading && <p>Carregando documentos...</p>}
+            {errorMessage && <p role="alert">{errorMessage}</p>}
+            {!isLoading && !errorMessage && (
+              <DocumentList userId={trimmedUserId} documents={documents} />
+            )}
+          </section>
+        </>
+      ) : (
+        <p>Informe um identificador de usuário para enviar e listar documentos.</p>
+      )}
     </main>
   );
 }
