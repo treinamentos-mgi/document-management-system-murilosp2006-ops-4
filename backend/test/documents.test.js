@@ -62,4 +62,10 @@ test('upload, listagem e download de documentos', async (t) => {
   await rm(storedPath);
   const missingStoredFile = await fetch(`${baseUrl}/documents/${document.id}/download`);
   assert.equal(missingStoredFile.status, 404);
+
+  let limitedResponse;
+  for (let i = 0; i < 100; i += 1) {
+    limitedResponse = await fetch(`${baseUrl}/upload`, { method: 'POST' });
+  }
+  assert.equal(limitedResponse.status, 429);
 });

@@ -1,6 +1,7 @@
 const { randomUUID } = require('node:crypto');
 const { mkdirSync } = require('node:fs');
 const express = require('express');
+const { rateLimit } = require('express-rate-limit');
 const multer = require('multer');
 const controller = require('../controllers/documents');
 const { storagePath } = require('../services/documents');
@@ -16,7 +17,12 @@ const upload = multer({
 });
 
 const router = express.Router();
-router.post('/upload', upload.single('file'), controller.upload);
+const uploadLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  message: { error: 'Muitos envios. Tente novamente mais tarde.' },
+});
+router.post('/upload', uploadLimit, upload.single('file'), controller.upload);
 router.get('/documents', controller.list);
 router.get('/documents/:id/download', controller.download);
 router.use((error, req, res, next) => {
