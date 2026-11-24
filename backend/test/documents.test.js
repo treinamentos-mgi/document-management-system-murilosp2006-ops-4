@@ -68,4 +68,9 @@ test('upload, listagem e download de documentos', async (t) => {
     limitedResponse = await fetch(`${baseUrl}/upload`, { method: 'POST' });
   }
   assert.equal(limitedResponse.status, 429);
+
+  for (let i = 0; i < 100; i += 1) {
+    limitedResponse = await fetch(`${baseUrl}/documents/inexistente/download`);
+  }
+  assert.equal(limitedResponse.status, 429);
 });

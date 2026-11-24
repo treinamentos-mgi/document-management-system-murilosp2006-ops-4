@@ -22,9 +22,14 @@ const uploadLimit = rateLimit({
   limit: 100,
   message: { error: 'Muitos envios. Tente novamente mais tarde.' },
 });
+const downloadLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  message: { error: 'Muitos downloads. Tente novamente mais tarde.' },
+});
 router.post('/upload', uploadLimit, upload.single('file'), controller.upload);
 router.get('/documents', controller.list);
-router.get('/documents/:id/download', controller.download);
+router.get('/documents/:id/download', downloadLimit, controller.download);
 router.use((error, req, res, next) => {
   if (!(error instanceof multer.MulterError)) return next(error);
   return res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({
