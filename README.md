@@ -31,7 +31,18 @@
 
 </div>
 
+## API de documentos
+
+- `POST /upload`: envie `multipart/form-data` com o campo `file` e,
+  opcionalmente, `owner`. O tamanho máximo do arquivo é 10 MiB; são permitidas
+  100 requisições de upload por IP a cada 15 minutos.
+- `GET /documents`: lista os metadados dos documentos.
+- `GET /documents/:id/download`: baixa o arquivo correspondente; são permitidas
+  100 requisições de download por IP a cada 15 minutos.
+
+Os arquivos ficam em `backend/storage` e os metadados permanecem em memória
+apenas até o servidor reiniciar. O campo `owner` não é uma autenticação.
+
 ---
 
 &copy; 2025 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)
-
